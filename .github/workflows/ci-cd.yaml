@@ -44,14 +44,26 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
 
-      - name: Set up Kubernetes context
-        uses: aws-actions/eks-kubeconfig-action@v1
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          cluster-name: ${{ secrets.EKS_CLUSTER_NAME }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       
+      - name: Set up kubectl for EKS
+        run: |
+          # Install AWS CLI
+          curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          
+          # Get the kubeconfig for EKS cluster
+          aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
+          
+          # Check kubectl configuration
+          kubectl get svc
+
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/deployment.yaml
