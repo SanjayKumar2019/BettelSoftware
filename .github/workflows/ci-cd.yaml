@@ -53,17 +53,22 @@ jobs:
       
       - name: Set up kubectl for EKS
         run: |
-          # Get the kubeconfig for EKS cluster
+          # Configure kubectl for the EKS cluster
           aws eks update-kubeconfig --region ${{ secrets.AWS_REGION }} --name ${{ secrets.EKS_CLUSTER_NAME }}
           
-          # Check kubectl configuration
+          # Verify kubectl connectivity
           kubectl get svc
 
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
-          kubectl rollout status deployment/nodejs-app
+          kubectl rollout status deployment/nodejs-app || exit 1
+
+      - name: Verify Deployment
+        run: |
+          kubectl get pods -l app=nodejs-app
+          kubectl get svc nodejs-service
 
   notify:
     needs: build-and-deploy
