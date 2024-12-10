@@ -13,7 +13,7 @@ spec:
         app: nodejs-app
     spec:
       containers:
-      - name: nodejs-container
-        image: <ECR_IMAGE_URI>
-        ports:
-        - containerPort: 3000
+        - name: nodejs-container
+          image: your-dockerhub-username/nodejs-app:latest
+          ports:
+            - containerPort: 3000
